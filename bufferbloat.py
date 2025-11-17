@@ -82,6 +82,19 @@ class BBTopo(Topo):
         switch = self.addSwitch("s0")
 
         # TODO: Add links with appropriate characteristics
+        
+        # Initialize hosts
+        h1, h2 = hosts[0], hosts[1]
+
+        # Add link between host1 and the router/switch s0 
+        # setting bandwidth to as 1gpbs = 1000mbps
+        # splitting delay across 2 links, with --delay 4, this becomes 2ms total one-way (1 ms per link) for total of 4 ms RTT
+        self.addLink(h1, switch, bw=args.bw_host, delay=f"{args.delay/2}ms")
+
+        # Add link between router/switch s0 and host 2
+        # setting bandwidth to be the bandwidth of bottleneck (network) link = 10mb/s
+        # setting queue on this link, I think the bottleneck/slow link is the only place where queueing happens
+        self.addLink(switch, h2, bw=args.bw_net, delay=f"{args.delay/2}ms", maxq=args.maxq)
 
 
 # Simple wrappers around monitoring utilities.  You are welcome to
@@ -134,6 +147,11 @@ def start_iperf(net: Mininet) -> None:
     # TODO: Start the iperf client on h1.  Ensure that you create a
     # long lived TCP flow. You may need to redirect iperf's stdout to avoid blocking.
 
+    # Run for args.time seconds, non-blocking, log output
+    h1 = net.get("h1")
+    iperf_client_file = os.path.join(args.dir, "iperf_client.txt")      
+    h1.popen(f"iperf -c {h2.IP()} -t {args.time} -i 1 > {iperf_client_file} 2>&1", shell=True)
+
 
 def start_webserver(net: Mininet) -> List[subprocess.Popen]:
     """Start HTTP webserver on h1."""
@@ -155,7 +173,11 @@ def start_ping(net: Mininet) -> None:
     # until stdout is read. You can avoid this by runnning popen.communicate() or
     # redirecting stdout
     h1 = net.get("h1")
-    h1.popen(f"echo '' > {os.path.join(args.dir, 'ping.txt')}", shell=True)
+    # h1.popen(f"echo '' > {os.path.join(args.dir, 'ping.txt')}", shell=True)
+
+    h2 = net.get("h2")
+    ping_file = os.path.join(args.dir, "ping.txt")
+    h1.popen(f"ping {h2.IP()} -i 0.1 -w {args.time} > {ping_file} 2>&1", shell=True)
 
 
 def cleanup_processes() -> None:
