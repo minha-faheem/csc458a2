@@ -139,18 +139,22 @@ def start_qmon(iface: str, interval_sec=0.1, outfile="q.txt") -> Process:
 def start_iperf(net: Mininet) -> None:
     """Start iperf server and (TODO) client."""
     h2 = net.get("h2")
-    print("Starting iperf server...")
-    # For those who are curious about the -w 16m parameter, it ensures
-    # that the TCP flow is not receiver window limited.  If it is,
-    # there is a chance that the router buffer may not get filled up.
-    server = h2.popen("iperf -s -w 16m")
-    # TODO: Start the iperf client on h1.  Ensure that you create a
-    # long lived TCP flow. You may need to redirect iperf's stdout to avoid blocking.
-
-    # Run for args.time seconds, non-blocking, log output
     h1 = net.get("h1")
-    iperf_client_file = os.path.join(args.dir, "iperf_client.txt")      
-    h1.popen(f"iperf -c {h2.IP()} -t {args.time} -i 1 > {iperf_client_file} 2>&1", shell=True)
+    print("Starting iperf server...")
+    # For those who are curious about the -w 16m parameter, 
+    # it ensures that the TCP flow is not receiver window limited.  
+    # If it is, there is a chance that the router buffer may not get filled up.
+    # server = h2.popen("iperf -s -w 16m")
+    server_log = os.path.join(args.dir, "iperf_server.txt")
+    # host.popen with shell=True will give non-blocking process handle
+    h2.popen(f"iperf -s -w 16m > {server_log} 2>&1", shell=True)
+
+    # TODO: Start the iperf client on h1.  Ensure that you create a long lived TCP flow. 
+    # You may need to redirect iperf's stdout to avoid blocking.
+    print("Starting iperf client (h1) to h2 ...")
+    client_log = os.path.join(args.dir, "iperf_client.txt")
+    # run client for args.time seconds, logs to file
+    h1.popen(f"iperf -c {h2.IP()} -t {args.time} -i 1 > {client_log} 2>&1", shell=True)
 
 
 def start_webserver(net: Mininet) -> List[subprocess.Popen]:
@@ -177,6 +181,8 @@ def start_ping(net: Mininet) -> None:
 
     h2 = net.get("h2")
     ping_file = os.path.join(args.dir, "ping.txt")
+    
+    # -i 0.1 interval, -w sets total time in seconds for ping to run
     h1.popen(f"ping {h2.IP()} -i 0.1 -w {args.time} > {ping_file} 2>&1", shell=True)
 
 
@@ -187,6 +193,22 @@ def cleanup_processes() -> None:
         "pgrep -f webserver.py | xargs kill -9 2>/dev/null || true", shell=True
     )
     subprocess.run("pgrep -f iperf | xargs kill -9 2>/dev/null || true", shell=True)
+
+
+# Helper function to measure fetch timings
+import statistics
+from statistics import mean
+
+def measure_time(net, h1, h2):
+    timings = []
+    url = f"http://{h1.IP()}/http/index.html"
+    for _ in range(3):
+        cmd = f"curl -o /dev/null -s -w %{{time_total}} {url}"
+        proc = h2.popen(cmd, shell=True)
+        out = proc.communicate()[0].decode().strip()
+        timings.append(float(out))              # convert to float
+
+    return mean(timings)
 
 
 def bufferbloat() -> None:
@@ -201,45 +223,40 @@ def bufferbloat() -> None:
     topo = BBTopo()
     net = Mininet(topo=topo, host=CPULimitedHost, link=TCLink)
     net.start()
-    # This dumps the topology and how nodes are interconnected through
-    # links.
-    dumpNodeConnections(net.hosts)
-    # This performs a basic all pairs ping test.
-    net.pingAll()
+    dumpNodeConnections(net.hosts)      # This dumps the topology and how nodes are interconnected through links.
+    net.pingAll()           # This performs a basic all pairs ping test.
 
     # Start all the monitoring processes
     start_tcpprobe("cwnd.txt")
-    start_ping(net)
 
-    # TODO: Start monitoring the queue sizes.  Since the switch I
-    # created is "s0", I monitor one of the interfaces.  Which
-    # interface?  The interface numbering starts with 1 and increases.
-    # Depending on the order you add links to your network, this
-    # number may be 1 or 2.  Ensure you use the correct number.
-    #
-    # qmon = start_qmon(iface='s0-eth2',
-    #                  outfile='%s/q.txt' % (args.dir))
-    qmon = None
+    # TODO: Start monitoring the queue sizes.  
+    # Since the switch I created is "s0", I monitor one of the interfaces.
+    # Which interface?  The interface numbering starts with 1 and increases.
+    # Depending on the order you add links to your network, this number may be 1 or 2.
+    # Ensure you use the correct number.
+    qmon = start_qmon(iface='s0-eth2', outfile='%s/q.txt' % (args.dir))
+    # qmon = None
 
     # TODO: Start iperf, webservers, etc.
-    # start_iperf(net)
+    start_iperf(net)        # Start long-lived TCP flow/iperf
+    start_webserver(net)    # Start webserver on h1
+    start_ping(net)         # Start ping train (h1 -> h2)
 
-    # Hint: The command below invokes a CLI which you can use to
-    # debug.  It allows you to run arbitrary commands inside your
-    # emulated hosts h1 and h2.
-    #
+    # Hint: The command below invokes a CLI which you can use to debug.
+    # It allows you to run arbitrary commands inside your emulated hosts h1 and h2.
     # CLI(net)
 
-    # TODO: measure the time it takes to complete webpage transfer
-    # from h1 to h2 (say) 3 times.  Hint: check what the following
-    # command does: curl -o /dev/null -s -w %{time_total} google.com
-    # Now use the curl command to fetch webpage from the webserver you
-    # spawned on host h1 (not from google!)
-    # Hint: have a separate function to do this and you may find the
-    # loop below useful.
+    # TODO: measure the time it takes to complete webpage transfer from h1 to h2 (say) 3 times. 
+    # Hint: check what the following command does: curl -o /dev/null -s -w %{time_total} google.com
+    # Now use the curl command to fetch webpage from the webserver you spawned on host h1 (not from google!)
+    # Hint: have a separate function to do this and you may find the loop below useful.
+    measurements = []
     start_time = time()
     while True:
         # do the measurement (say) 3 times.
+        measurement = measure_time(net, net.get("h1"), net.get("h2"))
+        measurements.append(measurement)
+        
         sleep(1)
         now = time()
         delta = now - start_time
@@ -247,9 +264,21 @@ def bufferbloat() -> None:
             break
         print("%.1fs left..." % (args.time - delta))
 
-    # TODO: compute average (and standard deviation) of the fetch
-    # times.  You don't need to plot them.  Just note it in your
-    # README and explain.
+    # TODO: compute average (and standard deviation) of the fetch times.
+    # You don't need to plot them.  Just note it in your README and explain.
+    if measurements:
+        avg = statistics.mean(measurements)
+        sd = statistics.stdev(measurements) if len(measurements) > 1 else 0.0
+    else:
+        avg = None
+        sd = None
+
+    with open(os.path.join(args.dir, "results.txt"), "w") as f:
+        if avg is None:
+            f.write("No fetch timings recorded.\n")
+        else:
+            f.write(f"mean {avg:.6f}\n")
+            f.write(f"stddev {sd:.6f}\n")
 
     stop_tcpprobe()
     if qmon is not None:
