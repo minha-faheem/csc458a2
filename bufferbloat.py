@@ -94,7 +94,7 @@ class BBTopo(Topo):
         # Add link between router/switch s0 and host 2
         # setting bandwidth to be the bandwidth of bottleneck (network) link = 10mb/s
         # setting queue on this link, I think the bottleneck/slow link is the only place where queueing happens
-        self.addLink(switch, h2, bw=args.bw_net, delay=f"{args.delay/2}ms", maxq=args.maxq)
+        self.addLink(switch, h2, bw=args.bw_net, delay=f"{args.delay/2}ms", max_queue_size=args.maxq)
 
 
 # Simple wrappers around monitoring utilities.  You are welcome to
@@ -182,7 +182,7 @@ def start_ping(net: Mininet) -> None:
     h2 = net.get("h2")
     ping_file = os.path.join(args.dir, "ping.txt")
     
-    # -i 0.1 interval, -w sets total time in seconds for ping to run
+    # -i 0.1 -w sets total time in seconds (handout says 10x/second = 0.1 second) for ping to run
     h1.popen(f"ping {h2.IP()} -i 0.1 -w {args.time} > {ping_file} 2>&1", shell=True)
 
 
