@@ -11,7 +11,7 @@ BW_NET=10
 
 # TODO: If you want the RTT to be 4ms what should the delay on each
 # link be?  Set this value correctly.
-DELAY=1
+DELAY=4
 IPERF_PORT=5001
 
 # Queue sizes to test
@@ -37,3 +37,5 @@ for qsize in "${QSIZES[@]}"; do
     python3 plot_queue.py -f $dir/q.txt -o $dir/q.png
     python3 plot_ping.py -f $dir/ping.txt -o $dir/rtt.png
 done
+
+echo "Experiments are complete. Plots are in the bb-q20 and bb-q100 directories."
