@@ -5,9 +5,13 @@ This assignment aims to study the dynamics of TCP in home networks. The figure b
 1. Start a long-lived TCP flow, sending data from h1 to h2, using iperf.
 2. Send pings from h1 to h2 10 times a second and record the RTTs.
 3. Plot the following time series:
-    a. CWND for The long-lived TCP flow
-    b. RTT reported by ping
-    c. Queue size at the bottleneck
+
+    - CWND for The long-lived TCP flow
+
+    - RTT reported by ping
+
+    - Queue size at the bottleneck
+
 4. Spawn a webserver on h1. Periodically download the index.html webpage (three times every five seconds) from h1 and measure how long it takes to be fetched (on average).
 5. Do this experiment twice for a router buffer size of 100 packets and 20 packets, respectively. 
 
@@ -36,8 +40,8 @@ For answers to the Questions and Theoretical Analysis from the handout, please r
 
 With smaller buffers, the queue is shorter so the latency is also lower, and so there are faster webpage fetches since the RTT drops. With larger buffers, many packets can occupy the queue, which keeps throughput high but also makes packets wait longer in the queue, increasing delay. As a result, webpage fetch times go up. This can be seen from one of the results obtained:
 
-    ```bb-q100: average=1.815298, stddev=0.242084```
-    ```bb-q20: average=0.543328, stddev=0.581217```
+    bb-q100: average=1.815298, stddev=0.242084
+    bb-q20: average=0.543328, stddev=0.581217
 
 
 
@@ -45,10 +49,15 @@ With smaller buffers, the queue is shorter so the latency is also lower, and so 
 
 The output of ```ifconfig enp0s1``` shows a ```txqueuelen``` of 1000.  
 Assuming a packet size of 1500 bytes, the maximum time a packet might wait can be calculated as follows:
+
     Bits per packet = 1500 bytes × 8 = 12,000 bits
+
     Total bits in queue = 12,000 bits/packet × 1000 packets = 12,000,000 bits
+
     Draining rate = 100 Mbps = 100,000,000 bits/s
+
     Maximum queueing time = 12,000,000 / 100,000,000 = 0.12s = 120 ms
+
 Therefore, a packet could wait up to 120 ms before leaving the NIC.
 
 
