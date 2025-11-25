@@ -51,15 +51,15 @@ Assuming a packet size of 1500 bytes, the maximum time a packet might wait can b
     Bits per packet = 1500 bytes × 8 = 12,000 bits
     Total bits in queue = 12,000 bits/packet × 1000 packets = 12,000,000 bits
     Draining rate = 100 Mbps = 100,000,000 bits/s
-    Maximum queueing time = 12,000,000 / 100,000,000 = 0.12s = 120 ms
+    Maximum queueing time = 12,000,000 / 100,000,000 = 0.12s = 120ms
 
 Therefore, a packet could wait up to 120 ms before leaving the NIC.
 
 <br>
 
-**3. Analyze your plots of CWND, RTT, and queue size.**
+**3. Analyze your plots of CWND, RTT, and queue size:**
 <br>
-**a. Derive or express a symbolic equation showing how RTT varies with queue size.**
+**3a. Derive or express a symbolic equation showing how RTT varies with queue size.**
 
 Based on the plots, one can see that the RTT increases linearly with the queue size. This can be expressed as the sum of base propagation delay and queuing delay as follows:
 
@@ -69,13 +69,13 @@ Where Q represents the number of packets in the queue, and C represents the band
 
 <br> 
 
-**b. Explain how CWND oscillations correspond to RTT spikes.**
+**3b. Explain how CWND oscillations correspond to RTT spikes.**
   
 Each time TCP additively increases the CWND, more data is injected into the network, causing the queue to fill. As the CWND grows in upward oscillations in the plot, the number of packets in the queue increases, which increases the RTT and produces corresponding spikes. When the queue reaches capacity and packet loss occurs, TCP reduces the CWND multiplicatively, and the RTT spikes fall as the CWND plot oscillates downward.
 
 <br> 
 
-**c. Discuss how buffer size influences TCP performance and webpage fetch times.**
+**3c. Discuss how buffer size influences TCP performance and webpage fetch times.**
   
 Based on the plots for ```bb-q100```, larger buffers allow TCP to achieve higher CWND sizes and higher throughput, but they also increase RTTs. This means more data can be sent, but webpage fetch times can be longer when the queue approaches full capacity. As seen in the plots for ```bb-q20```, shorter buffers cause packets to be dropped earlier, leading to more frequent reductions in CWND and smaller RTTs. As a result, webpages experience lower queuing delays and faster responses, but overall throughput may be slightly reduced. This behavior is also reflected in the results mentioned in my answer for question 1. 
 
