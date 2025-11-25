@@ -7,9 +7,7 @@ This assignment aims to study the dynamics of TCP in home networks. The figure b
 3. Plot the following time series:
 
     - CWND for The long-lived TCP flow
-
     - RTT reported by ping
-
     - Queue size at the bottleneck
 
 4. Spawn a webserver on h1. Periodically download the index.html webpage (three times every five seconds) from h1 and measure how long it takes to be fetched (on average).
@@ -34,7 +32,7 @@ Please take a look at ```results.txt``` containing the mean and stddev for webpa
 # Assignment Report
 For answers to the Questions and Theoretical Analysis from the handout, please refer to ```CSC458-A2-report.pdf``` included in this submission. As per the handout, the ***Questions*** section of the report will also be included in this ReadMe file below: 
 
-***QUESTIONS***
+**QUESTIONS**
 
 **1. Why do you see a difference in webpage fetch times with small and large router buffers?**
 
@@ -43,7 +41,7 @@ With smaller buffers, the queue is shorter so the latency is also lower, and so 
     bb-q100: average=1.815298, stddev=0.242084
     bb-q20: average=0.543328, stddev=0.581217
 
-
+<br> 
 
 **2. Bufferbloat can occur in other places such as your NIC. Use ```ifconfig``` or ```ip link show``` on your Mininet VM to identify the transmit queue length ```txqueuelen``` of an interface such as ```enp0s1``` and report the output. For this queue size and a draining rate of 100 Mbps, what is the maximum time a packet might wait before leaving the NIC?**
 
@@ -51,18 +49,16 @@ The output of ```ifconfig enp0s1``` shows a ```txqueuelen``` of 1000.
 Assuming a packet size of 1500 bytes, the maximum time a packet might wait can be calculated as follows:
 
     Bits per packet = 1500 bytes × 8 = 12,000 bits
-
     Total bits in queue = 12,000 bits/packet × 1000 packets = 12,000,000 bits
-
     Draining rate = 100 Mbps = 100,000,000 bits/s
-
     Maximum queueing time = 12,000,000 / 100,000,000 = 0.12s = 120 ms
 
 Therefore, a packet could wait up to 120 ms before leaving the NIC.
 
-
+<br>
 
 **3. Analyze your plots of CWND, RTT, and queue size.**
+<br>
 **a. Derive or express a symbolic equation showing how RTT varies with queue size.**
 
 Based on the plots, one can see that the RTT increases linearly with the queue size. This can be expressed as the sum of base propagation delay and queuing delay as follows:
@@ -71,16 +67,19 @@ Based on the plots, one can see that the RTT increases linearly with the queue s
 
 Where Q represents the number of packets in the queue, and C represents the bandwidth of the bottleneck link capacity in packets/second. 
 
+<br> 
+
 **b. Explain how CWND oscillations correspond to RTT spikes.**
   
 Each time TCP additively increases the CWND, more data is injected into the network, causing the queue to fill. As the CWND grows in upward oscillations in the plot, the number of packets in the queue increases, which increases the RTT and produces corresponding spikes. When the queue reaches capacity and packet loss occurs, TCP reduces the CWND multiplicatively, and the RTT spikes fall as the CWND plot oscillates downward.
-  
+
+<br> 
+
 **c. Discuss how buffer size influences TCP performance and webpage fetch times.**
   
 Based on the plots for ```bb-q100```, larger buffers allow TCP to achieve higher CWND sizes and higher throughput, but they also increase RTTs. This means more data can be sent, but webpage fetch times can be longer when the queue approaches full capacity. As seen in the plots for ```bb-q20```, shorter buffers cause packets to be dropped earlier, leading to more frequent reductions in CWND and smaller RTTs. As a result, webpages experience lower queuing delays and faster responses, but overall throughput may be slightly reduced. This behavior is also reflected in the results mentioned in my answer for question 1. 
 
-
-
+<br>
 
 **4. Identify and describe two ways to mitigate bufferbloat. For each, explain trade-offs and propose a Mininet experiment to evaluate quantitative effectiveness. Clearly document your experimental design, including parameter choices, measurement methodology, and justification for your conclusions, so that the TA can reproduce your results.**
 
@@ -89,6 +88,8 @@ i. Method 1: Smaller buffer with Explicit Congestion Notification (ECN)
 - Parameter choices: Enable ECN on the bottleneck link ```s0-eth2```. Compute metrics such as ```avg_throughput``` using the results from ```iperf```.
 - Measurement methodology: Compare mean web fetch time, standard deviation, ```avg_throughput```, and RTT for ```maxq=20``` with ECN enabled versus ```maxq=20``` and ```maxq=100``` without ECN.
 - Justification: Smaller buffers reduce RTT but may increase packet loss. Enabling ECN allows TCP to react to congestion earlier, marking packets instead of dropping them, which mitigates bufferbloat.
+
+<br>
 
 ii. Method 2: Active Queue Management (Random Early Detection, RED)
 - Trade-offs: RED monitors the average queue length and drops packets probabilistically before the queue is full. This prevents long queues and reduces bufferbloat, keeping RTT low. Parameter tuning is difficult and may reduce throughput.
