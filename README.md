@@ -31,6 +31,7 @@ Please take a look at ```results.txt``` containing the mean and stddev for webpa
 For answers to the Questions and Theoretical Analysis from the handout, please refer to ```CSC458-A2-report.pdf``` included in this submission. As per the handout, the ***Questions*** section of the report will also be included in this ReadMe file below: 
 
 ***QUESTIONS***
+
 **1. Why do you see a difference in webpage fetch times with small and large router buffers?**
 
 With smaller buffers, the queue is shorter so the latency is also lower, and so there are faster webpage fetches since the RTT drops. With larger buffers, many packets can occupy the queue, which keeps throughput high but also makes packets wait longer in the queue, increasing delay. As a result, webpage fetch times go up. This can be seen from one of the results obtained:
