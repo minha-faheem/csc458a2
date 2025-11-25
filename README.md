@@ -35,8 +35,9 @@ For answers to the Questions and Theoretical Analysis from the handout, please r
 **1. Why do you see a difference in webpage fetch times with small and large router buffers?**
 
 With smaller buffers, the queue is shorter so the latency is also lower, and so there are faster webpage fetches since the RTT drops. With larger buffers, many packets can occupy the queue, which keeps throughput high but also makes packets wait longer in the queue, increasing delay. As a result, webpage fetch times go up. This can be seen from one of the results obtained:
-```bb-q100: average=1.815298, stddev=0.242084```
-```bb-q20: average=0.543328, stddev=0.581217```
+
+    ```bb-q100: average=1.815298, stddev=0.242084```
+    ```bb-q20: average=0.543328, stddev=0.581217```
 
 
 
@@ -44,10 +45,10 @@ With smaller buffers, the queue is shorter so the latency is also lower, and so 
 
 The output of ```ifconfig enp0s1``` shows a ```txqueuelen``` of 1000.  
 Assuming a packet size of 1500 bytes, the maximum time a packet might wait can be calculated as follows:
-Bits per packet = 1500 bytes × 8 = 12,000 bits
-Total bits in queue = 12,000 bits/packet × 1000 packets = 12,000,000 bits
-Draining rate = 100 Mbps = 100,000,000 bits/s
-Maximum queueing time = 12,000,000 / 100,000,000 = 0.12s = 120 ms
+    Bits per packet = 1500 bytes × 8 = 12,000 bits
+    Total bits in queue = 12,000 bits/packet × 1000 packets = 12,000,000 bits
+    Draining rate = 100 Mbps = 100,000,000 bits/s
+    Maximum queueing time = 12,000,000 / 100,000,000 = 0.12s = 120 ms
 Therefore, a packet could wait up to 120 ms before leaving the NIC.
 
 
@@ -56,7 +57,9 @@ Therefore, a packet could wait up to 120 ms before leaving the NIC.
 **a. Derive or express a symbolic equation showing how RTT varies with queue size.**
 
 Based on the plots, one can see that the RTT increases linearly with the queue size. This can be expressed as the sum of base propagation delay and queuing delay as follows:
+
     RTT(Q) = RTT_0 + Q/C
+
 Where Q represents the number of packets in the queue, and C represents the bandwidth of the bottleneck link capacity in packets/second. 
 
 **b. Explain how CWND oscillations correspond to RTT spikes.**
