@@ -2,15 +2,15 @@
 
 # Overview
 This assignment aims to study the dynamics of TCP in home networks. The figure below shows a ”typical” home network with a home router connected to an end-host. The Home Router is connected via cable or DSL to a headend router at the Internet access provider’s office. We are going to study what happens when we download data from a remote server to the end-host in this home network by doing the following:
-1. Start a long-lived TCP flow, sending data from h1 to h2, using iperf.
-2. Send pings from h1 to h2 10 times a second and record the RTTs.
+1. Start a long-lived TCP flow, sending data from ```h1``` to ```h2```, using ```iperf```.
+2. Send pings from ```h1``` to ```h2``` 10 times a second and record the RTTs.
 3. Plot the following time series:
 
     - CWND for The long-lived TCP flow
     - RTT reported by ping
     - Queue size at the bottleneck
 
-4. Spawn a webserver on h1. Periodically download the index.html webpage (three times every five seconds) from h1 and measure how long it takes to be fetched (on average).
+4. Spawn a webserver on ```h1```. Periodically download the ```index.html``` webpage (three times every five seconds) from ```h1``` and measure how long it takes to be fetched (on average).
 5. Do this experiment twice for a router buffer size of 100 packets and 20 packets, respectively. 
 
 
@@ -30,7 +30,7 @@ Please take a look at ```results.txt``` containing the mean and stddev for webpa
 
 
 # Assignment Report
-For answers to the Questions and Theoretical Analysis from the handout, please refer to ```CSC458-A2-report.pdf``` included in this submission. As per the handout, the ***Questions*** section of the report will also be included in this ReadMe file below: 
+For answers to the Questions and Theoretical Analysis from the handout, please refer to ```CSC458-A2-report.pdf``` included in this submission. As per the handout, the ***Questions*** section of the report will also be included in on this page below: 
 
 **QUESTIONS**
 
